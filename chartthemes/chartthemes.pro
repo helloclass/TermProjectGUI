@@ -2,6 +2,7 @@ QT += charts
 requires(qtConfig(combobox))
 
 HEADERS += \
+    main.h \
     setting.h \
     themewidget.h
 

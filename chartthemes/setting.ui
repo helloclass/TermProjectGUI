@@ -127,13 +127,13 @@
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_6">
     <item>
-     <widget class="QLineEdit" name="lineEdit_5"/>
+     <widget class="QLineEdit" name="CoreEdit"/>
     </item>
     <item>
-     <widget class="QLineEdit" name="lineEdit_4"/>
+     <widget class="QLineEdit" name="ResolEdit"/>
     </item>
     <item>
-     <widget class="QLineEdit" name="lineEdit_3"/>
+     <widget class="QLineEdit" name="Ps_numEdit"/>
     </item>
    </layout>
   </widget>
@@ -196,10 +196,10 @@
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_8">
     <item>
-     <widget class="QLineEdit" name="lineEdit_6"/>
+     <widget class="QLineEdit" name="MinEdit"/>
     </item>
     <item>
-     <widget class="QLineEdit" name="lineEdit_7"/>
+     <widget class="QLineEdit" name="MaxEdit"/>
     </item>
    </layout>
   </widget>
@@ -229,7 +229,7 @@
     <string>Execute</string>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>60</x>
@@ -274,7 +274,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>170</x>
@@ -288,12 +288,25 @@
      <widget class="QComboBox" name="comboBox"/>
     </item>
     <item>
-     <widget class="QLineEdit" name="lineEdit"/>
+     <widget class="QLineEdit" name="TaskEdit"/>
     </item>
     <item>
      <widget class="QComboBox" name="comboBox_2"/>
     </item>
    </layout>
+  </widget>
+  <widget class="QPushButton" name="pushButton_3">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>510</y>
+     <width>89</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Exhibition</string>
+   </property>
   </widget>
  </widget>
  <resources/>

@@ -55,6 +55,33 @@ class ThemeWidget: public QWidget
     Q_OBJECT
 public:
     explicit ThemeWidget(QWidget *parent = 0);
+    QList<QChartView *> m_charts;
+    Ui_ThemeWidgetForm *m_ui;
+    int maxAva;
+    unsigned long ATT[5];
+    unsigned long AWT[5];
+
+    QChartView *chartView;
+
+    int num_m_chart();
+    QChartView* get_m_chart(int idx);
+    void set_m_chart(int idx, QChartView* widget);
+
+    int TaskNum;
+    typedef struct timeSlice{
+        int pid;
+        unsigned long task;
+        int priority;
+
+        unsigned long arr;
+        unsigned long exe;
+        unsigned long wait;
+        unsigned long ret;
+    }timeSlice;
+    timeSlice tSlice[5][40];
+
+    void Reload();
+
     ~ThemeWidget();
 
 private Q_SLOTS:
@@ -62,15 +89,16 @@ private Q_SLOTS:
     void on_pushButton_clicked();
 
 private:
-    DataTable generateRandomData(int listCount, int valueMax, int valueCount) const;
     void populateThemeBox();
     void populateAnimationBox();
     void populateLegendBox();
+    void populateMethodBox();
     void connectSignals();
     QChart *createAreaChart() const;
-    QChart *createBarChart(int valueCount) const;
+    QChart *createBarChart(QString name, unsigned long* valueCount) const;
     QChart *createHBarChart(int valueCount) const;
     QChart *createPieChart() const;
+    QChart *createPieChart1() const;
     QChart *createLineChart() const;
     QChart *createSplineChart() const;
     QChart *createScatterChart() const;
@@ -80,10 +108,10 @@ private:
     int m_valueMax;
     int m_valueCount;
     // Display many charts LIST
-    QList<QChartView *> m_charts;
+    DataTable gantt_dataTable;
     DataTable m_dataTable;
 
-    Ui_ThemeWidgetForm *m_ui;
+    int _taskOrder[5][8];
 };
 
 #endif /* THEMEWIDGET_H */

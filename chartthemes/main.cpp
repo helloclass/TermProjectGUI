@@ -31,15 +31,22 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMainWindow>
 #include "setting.h"
+#include "QDebug"
+
+static ThemeWidget *widget;
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     QMainWindow window;
 
-    ThemeWidget *widget = new ThemeWidget();
+//    Setting *setting = new Setting();
+//    setting->show();
+
+    widget = new ThemeWidget();
     window.setCentralWidget(widget);
-    window.resize(900, 600);
+    window.setWindowTitle("_20164317_JeonSeongBok");
+    window.resize(1500, 800);
     window.show();
 
     return a.exec();
