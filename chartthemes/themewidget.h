@@ -57,28 +57,25 @@ public:
     explicit ThemeWidget(QWidget *parent = 0);
     QList<QChartView *> m_charts;
     Ui_ThemeWidgetForm *m_ui;
-    int maxAva;
-    unsigned long ATT[5];
-    unsigned long AWT[5];
+
+    float ATT[7];
+    float ART[7];
+    float AWT[7];
 
     QChartView *chartView;
 
-    int num_m_chart();
-    QChartView* get_m_chart(int idx);
-    void set_m_chart(int idx, QChartView* widget);
-
     int TaskNum;
     typedef struct timeSlice{
+        int round;
         int pid;
-        unsigned long task;
-        int priority;
-
-        unsigned long arr;
-        unsigned long exe;
-        unsigned long wait;
-        unsigned long ret;
+        int arr;
+        int exe;
+        int pri;
+        int wait;
+        int resp;
+        int ret;
     }timeSlice;
-    timeSlice tSlice[5][40];
+    timeSlice tSlice[10][40];
 
     void Reload();
 
@@ -90,28 +87,27 @@ private Q_SLOTS:
 
 private:
     void populateThemeBox();
-    void populateAnimationBox();
+    //void populateAnimationBox();
     void populateLegendBox();
     void populateMethodBox();
     void connectSignals();
-    QChart *createAreaChart() const;
-    QChart *createBarChart(QString name, unsigned long* valueCount) const;
+    QChart *createBarChart(QString name, float* valueCount, QColor color) const;
+    QChart *createGanttChart() const;
     QChart *createHBarChart(int valueCount) const;
-    QChart *createPieChart() const;
+    QChart *createATTChart() const;
     QChart *createPieChart1() const;
     QChart *createLineChart() const;
-    QChart *createSplineChart() const;
-    QChart *createScatterChart() const;
+
 
 private:
     int m_listCount;
     int m_valueMax;
     int m_valueCount;
-    // Display many charts LIST
-    DataTable gantt_dataTable;
-    DataTable m_dataTable;
+    const int tasknum;
+    int TQ;
 
-    int _taskOrder[5][8];
+    // save TASK PRIORITY
+    int taskpri[10][30];
 };
 
 #endif /* THEMEWIDGET_H */

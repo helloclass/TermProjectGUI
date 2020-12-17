@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1118</width>
-    <height>600</height>
+    <width>1255</width>
+    <height>575</height>
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout">
@@ -24,44 +24,14 @@
       <widget class="QComboBox" name="themeComboBox"/>
      </item>
      <item>
-      <widget class="QLabel" name="animatedLabel">
-       <property name="text">
-        <string>Animation:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="animatedComboBox"/>
-     </item>
-     <item>
-      <widget class="QLabel" name="legendLabel">
-       <property name="text">
-        <string>Legend:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="legendComboBox"/>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="antialiasCheckBox">
-       <property name="text">
-        <string>Anti-aliasing</string>
-       </property>
-       <property name="checked">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="taskComboBox"/>
-     </item>
-     <item>
       <widget class="QLabel" name="label">
        <property name="text">
         <string>Method</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="taskComboBox"/>
      </item>
      <item>
       <widget class="QPushButton" name="pushButton">
@@ -77,55 +47,7 @@
  <resources/>
  <connections>
   <connection>
-   <sender>antialiasCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>ThemeWidgetForm</receiver>
-   <slot>updateUI()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>20</x>
-     <y>20</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>20</x>
-     <y>20</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>legendComboBox</sender>
-   <signal>currentIndexChanged(int)</signal>
-   <receiver>ThemeWidgetForm</receiver>
-   <slot>updateUI()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>20</x>
-     <y>20</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>20</x>
-     <y>20</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>themeComboBox</sender>
-   <signal>currentIndexChanged(int)</signal>
-   <receiver>ThemeWidgetForm</receiver>
-   <slot>updateUI()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>20</x>
-     <y>20</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>20</x>
-     <y>20</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>animatedComboBox</sender>
    <signal>currentIndexChanged(int)</signal>
    <receiver>ThemeWidgetForm</receiver>
    <slot>updateUI()</slot>

@@ -40,13 +40,10 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     QMainWindow window;
 
-//    Setting *setting = new Setting();
-//    setting->show();
-
     widget = new ThemeWidget();
     window.setCentralWidget(widget);
     window.setWindowTitle("_20164317_JeonSeongBok");
-    window.resize(1500, 800);
+    window.resize(1800, 900);
     window.show();
 
     return a.exec();

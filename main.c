@@ -35,6 +35,8 @@ queue* RRq;
 int round_idx = 0;
 int _USE_ROUND = 0;
 
+int _tasked_RR = 0;
+
 queue q;
 queue core;
 
@@ -82,8 +84,6 @@ static void pushPS(queue* q, unsigned long task, int priority){
 	// setTimeSlice(q, pid, &nts);
 	setTimeSlicePid(q, pid, pid);
 	setTimeSliceArrivalTime(q, pid, time);
-
-	printf("efefef:%d %d %ld\n", pid, getTimeSlicePid(q, pid), getTimeSliceArrivalTime(q, pid));
 }
 
 
@@ -107,9 +107,6 @@ static void pushPS_RR(queue* q, unsigned long task, int priority){
 	nts.returnTime		= 0;
 
 	setTimeSlice(&q[priority], pid, &nts);
-
-	snprintf(commandLine, BUFFER_SIZE, "echo %d %ld >>chartthemes/purified", nts.pid, nts.arrivalTime);
-	system(commandLine);
 }
 
 // work
@@ -118,8 +115,9 @@ static int Load(int pid, unsigned long task){
 
 	if (!_USE_ROUND)
 		nq = &q;
-	else 
+	else {
 		nq = &RRq[round_idx];
+	}
 	
 	if (pid == -1 || task == -1){
 		return -1;
@@ -152,30 +150,50 @@ static int Load(int pid, unsigned long task){
 
 	// 실행 시간 누적
 	setTimeSliceExecuteTime(nq, pid, (getTimeSliceExecuteTime(nq, pid) + GetDeltaTime(&st, &et)));
-	
+
 	// 반환시간
 	struct timespec returnTime;
 	clock_gettime(CLOCK_MONOTONIC, &returnTime);
 
-	i = pid;
-
 	// setTask -> thread만큼 task를 실행, 감소
 	// 만일 끝났으면
 	if (isDone){
-		// 반환 시간
-		setTimeSliceReturnTime(nq, pid, GetTime(&returnTime));
-		// 대기 시간
-		setTimeSliceWaitTime(nq, pid, GetTime(&returnTime) - getTimeSliceArrivalTime(nq, pid) - getTimeSliceExecuteTime(nq, pid));
-		calcWaitTime = GetTime(&returnTime) - getTimeSliceArrivalTime(nq, pid);
+		if (!_USE_ROUND)
+		{
+			// 반환 시간
+			setTimeSliceReturnTime(nq, pid, GetTime(&returnTime));
 
-		printf("\t\t> <%d> 도착: <%ld>, 실행: <%ld>, 대기: <%ld>, 반환: <%ld>\n\n",\
-			       	i, getTimeSliceArrivalTime(nq, pid), getTimeSliceExecuteTime(nq, pid), \
-				getTimeSliceWaitTime(nq, pid), getTimeSliceReturnTime(nq, pid));
-		
-		snprintf(commandLine, BUFFER_SIZE, "echo %d %ld %ld %ld >>chartthemes/purified",\
-				i, getTimeSliceExecuteTime(nq, pid), \
-				getTimeSliceWaitTime(nq, pid), getTimeSliceReturnTime(nq, pid));
+			// 대기 시간
+			setTimeSliceWaitTime(nq, pid, GetTime(&returnTime) - getTimeSliceArrivalTime(nq, pid) - getTimeSliceExecuteTime(nq, pid));
+			calcWaitTime = GetTime(&returnTime) - getTimeSliceArrivalTime(nq, pid);
 			
+			// 결과 리턴
+			printf("\t\t> <%d> 도착: <%ld>, 실행: <%ld>, 대기: <%ld>, 반환: <%ld>\n\n",\
+					pid, getTimeSliceArrivalTime(nq, pid), getTimeSliceExecuteTime(nq, pid), \
+					getTimeSliceWaitTime(nq, pid), getTimeSliceReturnTime(nq, pid));
+			
+			snprintf(commandLine, BUFFER_SIZE, "echo %d %ld %ld %ld >>chartthemes/purified",\
+					pid, getTimeSliceExecuteTime(nq, pid), \
+					getTimeSliceWaitTime(nq, pid), getTimeSliceReturnTime(nq, pid));
+		} 
+		else
+		{
+			// 반환 시간
+			setTimeSliceReturnTime(nq, pid, GetTime(&returnTime));
+
+			// 대기 시간
+			setTimeSliceWaitTime(nq, pid, GetTime(&returnTime) - getTimeSliceArrivalTime(nq, pid) - getTimeSliceExecuteTime(nq, pid));
+			calcWaitTime = GetTime(&returnTime) - getTimeSliceArrivalTime(nq, pid);
+			
+			// 결과 리턴
+			printf("\t\t> <%d / %d> 도착: <%ld>, 실행: <%ld>, 대기: <%ld>, 반환: <%ld>\n\n",\
+					round_idx, pid, getTimeSliceArrivalTime(nq, pid), getTimeSliceExecuteTime(nq, pid), \
+					getTimeSliceWaitTime(nq, pid), getTimeSliceReturnTime(nq, pid));
+			
+			snprintf(commandLine, BUFFER_SIZE, "echo %d %d %ld %ld %ld >>chartthemes/purified",\
+					round_idx, pid, getTimeSliceExecuteTime(nq, pid), \
+					getTimeSliceWaitTime(nq, pid), getTimeSliceReturnTime(nq, pid));
+		}
 		system(commandLine);
 
 		AWT += getTimeSliceExecuteTime(nq, pid);
@@ -427,7 +445,8 @@ int main(long argc, char* args[]){
 		}
 
 		// 예제 큐를 초기화	
-		if (!_USE_ROUND){
+		if (!_USE_ROUND)
+		{
 			// init readyQueue
 			init(&q);
 		
@@ -455,27 +474,29 @@ int main(long argc, char* args[]){
 				system(commandLine);
 			}
 
-		}else{
-			if (RRq->rear < 2)
+		}
+		else
+		{
+			if (sch == 3)
 			{
 				// push Process in RR queue
-				pushPS(RRq, 110000000UL, 0);
-				pushPS(RRq, 91000000UL, 1);
-				pushPS(RRq, 70000000UL, 2);
-				pushPS(RRq, 500000000UL, 3);
-				pushPS(RRq, 230000000UL, 4);
-				pushPS(RRq, 100000000UL, 5);
-				pushPS(RRq, 9000000UL, 6);
-				pushPS(RRq, 990000000UL, 7);
-				pushPS(RRq, 1100000UL, 8);
+				pushPS_RR(RRq, 110000000UL, 0);
+				pushPS_RR(RRq, 91000000UL, 0);
+				pushPS_RR(RRq, 70000000UL, 3);
+				pushPS_RR(RRq, 500000000UL, 3);
+				pushPS_RR(RRq, 230000000UL, 7);
+				pushPS_RR(RRq, 100000000UL, 5);
+				pushPS_RR(RRq, 9000000UL, 5);
+				pushPS_RR(RRq, 990000000UL, 7);
+				pushPS_RR(RRq, 1100000UL, 8);
 			}
 
 			snprintf(commandLine, BUFFER_SIZE, "echo %d >>chartthemes/purified", 8);
 			system(commandLine);
 
-			for (i = 0; i < 8; i++){
+			for (i = 0; i < 9; i++){
 				snprintf(commandLine, BUFFER_SIZE, "echo info %d %ld >>chartthemes/purified", \
-						i, getTimeSliceArrivalTime(&q, getTimeSlicePid(&q, i)));
+						round_idx, getTimeSliceArrivalTime(&q, getTimeSlicePid(&q, i)));
 				system(commandLine);
 			}
 		}
