@@ -19,7 +19,7 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
         populateMethodBox();
 
         //init chart info
-        QFile file("/home/seongbokjeon/GOODLUCK/purified1");
+        QFile file("/home/seongbok/GOODLUCK/purified1");
 
         if (!file.open(QFile::ReadOnly|QFile::Text))
         {
@@ -54,6 +54,8 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
         QTextStream strstr(&file);
 
         for (int met = 0; met< 7; met++){
+            int rstack = 0;
+
             // pid, arr, exe, pri, wait, resp, ret
             QString context = strstr.readLine();
             qDebug() << "METTTT" << met;
@@ -108,12 +110,11 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
                 vocaStr >> voca;
 
                 ATT[met] = voca.toFloat();
+
+                tSlice[met][tasknum].pid = -1;
             }
             else
             {
-                int round = 0;
-                int seqPID = 0;
-
                 // PROCESSED ROUND
                 while (true)
                 {
@@ -124,14 +125,11 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
                     int pid;
 
                     vocaStr >> voca;
-                    if (voca == "round")
+
+                    if (voca == "awt")
                     {
-                        vocaStr >> voca;
-                        round = voca.toInt();
-                        continue;
-                    }
-                    else if (voca == "awt")
-                    {
+                        tSlice[met][rstack].pid = -1;
+
                         //awt
                         vocaStr >> voca;
 
@@ -148,38 +146,34 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
                         vocaStr >> voca;
 
                         ATT[met] = voca.toFloat();
-
                         break;
                     }
                     pid = voca.toInt();
 
-                    tSlice[met][pid].pid = pid;
-
-                    tSlice[met][pid].round = round;
+                    tSlice[met][rstack].pid = pid;
                     vocaStr >> voca;
 
-                    tSlice[met][pid + round * tasknum].arr = voca.toInt();
+                    tSlice[met][rstack].arr = voca.toInt();
                     vocaStr >> voca;
 
-                    tSlice[met][pid + round * tasknum].exe = voca.toInt();
-                    taskpri[met][seqPID + round * tasknum] = pid;
-
-                    qDebug() << "TT$" << met << (seqPID++) + round * tasknum<< pid;
+                    tSlice[met][rstack].exe = voca.toInt();
                     vocaStr >> voca;
 
-                    tSlice[met][pid + round * tasknum].pri = voca.toInt();
+                    tSlice[met][rstack].pri = voca.toInt();
                     vocaStr >> voca;
 
-                    tSlice[met][pid + round * tasknum].wait = voca.toInt();
+                    tSlice[met][rstack].wait = voca.toInt();
                     vocaStr >> voca;
 
-                    tSlice[met][pid + round * tasknum].resp = voca.toInt();
+                    tSlice[met][rstack].resp = voca.toInt();
                     vocaStr >> voca;
 
-                    tSlice[met][pid + round * tasknum].ret = voca.toInt();
+                    tSlice[met][rstack].ret = voca.toInt();
 
-                    qDebug() << "RRTEST: " << pid + round * tasknum << tSlice[met][pid].pid << tSlice[met][pid].arr << tSlice[met][pid].exe\
-                             << tSlice[met][pid].pri <<tSlice[met][pid].wait << tSlice[met][pid].resp <<tSlice[met][pid].ret;
+                    qDebug() << "RRTEST: " << tSlice[met][rstack].pid << tSlice[met][rstack].arr << tSlice[met][rstack].exe\
+                             << tSlice[met][rstack].pri <<tSlice[met][rstack].wait << tSlice[met][rstack].resp <<tSlice[met][rstack].ret;
+
+                    rstack += 1;
                 }
 
            }
@@ -212,8 +206,9 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
 
         // Set the colors from the light theme as default ones
         QPalette pal = qApp->palette();
-        pal.setColor(QPalette::Window, QRgb(0xf0f0f0));
+        pal.setColor(QPalette::Window, QRgb(0xcee7f0));
         pal.setColor(QPalette::WindowText, QRgb(0x404044));
+
         qApp->setPalette(pal);
 
         MChart = &m_charts;
@@ -222,7 +217,7 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
     }
 
 ThemeWidget::~ThemeWidget()
-{    
+{
     delete m_ui;
 }
 
@@ -250,10 +245,10 @@ void ThemeWidget::Reload(){
     m_ui->gridLayout->addWidget(chartView, 2, 3);
     m_charts << chartView;
 
-    chartView = new QChartView(createGanttChart());
-    chartView->setFixedWidth(300);
-    m_ui->gridLayout->addWidget(chartView, 1, 4, 2, 4);
-    m_charts << chartView;
+//    chartView = new QChartView(createGanttChart());
+//    chartView->setFixedWidth(300);
+//    m_ui->gridLayout->addWidget(chartView, 1, 4, 2, 4);
+//    m_charts << chartView;
 
     MChart = &m_charts;
 
@@ -283,6 +278,7 @@ void ThemeWidget::populateMethodBox()
     m_ui->taskComboBox->addItem("RR");
     m_ui->taskComboBox->addItem("SRT");
     m_ui->taskComboBox->addItem("PP");
+    m_ui->taskComboBox->addItem("NPP");
 }
 
 QChart *ThemeWidget::createBarChart(QString name, float* value, QColor color) const
@@ -325,7 +321,11 @@ QChart *ThemeWidget::createGanttChart() const
 {
     int met = this->m_ui->taskComboBox->currentIndex();
     int top = 0, max = 1;
+    int TN = tasknum;
 
+    for (int i = 0; i < 40; i++)
+        if (tSlice[met][i].pid == -1)
+            TN = i;
 
     //Q_UNUSED(value);
     QChart *chart = new QChart();
@@ -342,11 +342,8 @@ QChart *ThemeWidget::createGanttChart() const
 
     float val;
     // data list num
-    for (int j(0); j<tasknum * 2; j++){
-        if (j < tasknum)
-            val = tSlice[met][taskpri[met][j%tasknum]].exe;
-        else
-            val = tSlice[met][taskpri[met][j%tasknum] + tasknum].exe;
+    for (int j(0); j<TN; j++){
+        val = tSlice[met][j].exe;
 
         if (val <= 0)
             continue;
@@ -368,17 +365,28 @@ QChart *ThemeWidget::createGanttChart() const
 
 QChart *ThemeWidget::createHBarChart(int valueCount) const
 {
-    Q_UNUSED(valueCount);
     QChart *chart = new QChart();
     chart->setTitle("Gantt Chart");
 
+    QColor waitColor = QColor(255, 0, 0);
+    QColor exeColor = QColor(0, 255, 0);
+
+    int preTime = 0;
+
     int met = this->m_ui->taskComboBox->currentIndex();
+    int TN = tasknum;
     int doneTime = 0, d;
+
+    for (int i = 0; i < 40; i++)
+        if (tSlice[met][i].pid == -1)
+            TN = i;
 
     for (int t = 0; t < tasknum; t++)
     {
         doneTime += tSlice[met][t].exe;
     }
+
+    qDebug() << "TOT_TASK_NUM: " << doneTime;
 
     d = doneTime;
     doneTime = 15;
@@ -390,24 +398,72 @@ QChart *ThemeWidget::createHBarChart(int valueCount) const
     QBarSet *set1 = new QBarSet("_WAIT_TIME");
     QBarSet *set2 = new QBarSet("_EXECUTE_TIME");
     QBarSet *set3 = new QBarSet("_DONE_TIME");
-    QBarSet *set4 = new QBarSet("NEXT");
 
+    set1->setColor(waitColor);
+    set2->setColor(exeColor);
+
+    // arr
     for (int t = 0; t < tasknum; t++){
-        *set0 << tSlice[met][t].arr;
-        *set1 << tSlice[met][t].wait;
-        *set2 << tSlice[met][t].exe;
-        *set3 << (d - tSlice[met][t].ret - tSlice[met][t].arr);
+        int pos2arr = 0;
+        for (int count = 0; count < TN; count++)
+            if (tSlice[met][count].pid == t)
+                pos2arr = tSlice[met][count].arr;
 
-        int next = tSlice[met][t + tasknum].exe;
-        *set4 << next;
-        d += next;
+        *set0 << pos2arr;
+    }
+    series->append(set0);
+
+    int stackCount[30] = {0};
+    int complimentations[30] = {0};
+
+    // other
+    for (int t = 0; t < TN*2; t++){
+        int pos = -1, c = 0, b = stackCount[t % tasknum];
+
+        for (int count = 0; count < TN; count++){
+            //qDebug() << "t " << t%tasknum << "p " << tSlice[met][count].pid << "count " << count;
+            if ((t % tasknum) == tSlice[met][count].pid){
+                if (c < b)
+                {
+                    c++;
+                    continue;
+                }
+
+                pos = count;
+                stackCount[t % tasknum]++;
+                break;
+            }
+        }
+
+        if (pos == -1)
+        {
+            *set1 << 0;
+            *set2 << 0;
+        }
+        else
+        {
+            *set1 << (tSlice[met][pos].wait - complimentations[t % tasknum]);
+            *set2 << tSlice[met][pos].exe;
+            complimentations[t % tasknum] = (tSlice[met][pos].exe + tSlice[met][pos].wait);
+        }
+
+        if ((t + 1) % tasknum == 0)
+        {
+            series->append(set1);
+            series->append(set2);
+
+            set1 = new QBarSet("_WAIT_TIME");
+            set2 = new QBarSet("_EXECUTE_TIME");
+
+            set1->setColor(waitColor);
+            set2->setColor(exeColor);
+        }
     }
 
-    series->append(set0);
-    series->append(set1);
-    series->append(set2);
+    //for (int i = 0; i<tasknum; i++){
+        //*set3 << (d - tSlice[met][pos].ret - tSlice[met][pos].arr);
+    //}
     series->append(set3);
-    series->append(set4);
 
     chart->addSeries(series);
 
@@ -423,7 +479,11 @@ QChart *ThemeWidget::createLineChart() const
     int met = this->m_ui->taskComboBox->currentIndex();
 
     QLineSeries* series = new QLineSeries();
+    int TN = 0;
 
+    for (int i = 0; i < 40; i++)
+        if (tSlice[met][i].pid == -1)
+            TN = i;
 
     chart->setTitle("TASK SERISE");
 
@@ -432,11 +492,11 @@ QChart *ThemeWidget::createLineChart() const
     QString name("Task ");
     for (int i = 0; i<1; i++)
     {
-        for (int tt = 0; tt<tasknum; tt++){
-            if (max < tSlice[met][taskpri[met][tt]].exe)
-                max = tSlice[met][taskpri[met][tt]].exe;
+        for (int tt = 0; tt<TN; tt++){
+            if (max < tSlice[met][tSlice[met][tt].pri].exe)
+                max = tSlice[met][tSlice[met][tt].pri].exe;
 
-            series->append(tt, tSlice[met][taskpri[met][tt]].exe);
+            series->append(tt, tSlice[met][tSlice[met][tt].pri].exe);
         }
     }
 
@@ -448,8 +508,8 @@ QChart *ThemeWidget::createLineChart() const
         mBound *= 2;
 
     chart->createDefaultAxes();
-    chart->axes(Qt::Horizontal).first()->setRange(0, tasknum - 1);
-    chart->axes(Qt::Vertical).first()->setRange(0, mBound);
+    chart->axes(Qt::Horizontal).first()->setRange(0, TN);
+    chart->axes(Qt::Vertical).first()->setRange(0, 8);
 
     return chart;
 }
@@ -463,42 +523,10 @@ void ThemeWidget::updateUI()
     //![6]
     const auto charts = m_charts;
     if (!m_charts.isEmpty()) {
-        for (QChartView *chartView : charts)
-        {
-            chartView->chart()->setTheme(theme);
-        }
-
-        // Set palette colors based on selected theme
-        //![8]
-        QPalette pal = window()->palette();
-
-        if (theme == QChart::ChartThemeLight) {
-            pal.setColor(QPalette::Window, QRgb(0xf0f0f0));
-            pal.setColor(QPalette::WindowText, QRgb(0x404044));
-        //![8]
-        } else if (theme == QChart::ChartThemeDark) {
-            pal.setColor(QPalette::Window, QRgb(0x121218));
-            pal.setColor(QPalette::WindowText, QRgb(0xd6d6d6));
-        } else if (theme == QChart::ChartThemeBlueCerulean) {
-            pal.setColor(QPalette::Window, QRgb(0x40434a));
-            pal.setColor(QPalette::WindowText, QRgb(0xd6d6d6));
-        } else if (theme == QChart::ChartThemeBrownSand) {
-            pal.setColor(QPalette::Window, QRgb(0x9e8965));
-            pal.setColor(QPalette::WindowText, QRgb(0x404044));
-        } else if (theme == QChart::ChartThemeBlueNcs) {
-            pal.setColor(QPalette::Window, QRgb(0x018bba));
-            pal.setColor(QPalette::WindowText, QRgb(0x404044));
-        } else if (theme == QChart::ChartThemeHighContrast) {
-            pal.setColor(QPalette::Window, QRgb(0xffab03));
-            pal.setColor(QPalette::WindowText, QRgb(0x181818));
-        } else if (theme == QChart::ChartThemeBlueIcy) {
-            pal.setColor(QPalette::Window, QRgb(0xcee7f0));
-            pal.setColor(QPalette::WindowText, QRgb(0x404044));
-        } else {
-            pal.setColor(QPalette::Window, QRgb(0xf0f0f0));
-            pal.setColor(QPalette::WindowText, QRgb(0x404044));
-        }
-        window()->setPalette(pal);
+//        for (QChartView *chartView : charts)
+//        {
+//            chartView->chart()->setTheme(theme);
+//        }
     }
 
     if (!ThemeWidget::m_charts.isEmpty()) {
